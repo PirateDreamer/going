@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/PirateDreamer/going/xerr"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/mario/going/xerr"
 )
 
 type Response struct {

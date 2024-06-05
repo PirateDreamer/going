@@ -1,4 +1,4 @@
-module github.com/mario/going
+module github.com/PirateDreamer/going
 
 go 1.22.2
 
