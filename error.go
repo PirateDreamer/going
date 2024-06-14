@@ -1,4 +1,4 @@
-package xerr
+package going
 
 import "fmt"
 

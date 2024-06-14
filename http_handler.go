@@ -1,11 +1,10 @@
-package http
+package going
 
 import (
 	"context"
 	"reflect"
 	"time"
 
-	"github.com/PirateDreamer/going/xerr"
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
@@ -44,7 +43,7 @@ func ResFailWithData(ctx context.Context, c *app.RequestContext, err error, data
 		Data:  data,
 	}
 	switch e := err.(type) {
-	case xerr.BizError:
+	case BizError:
 		result.Code = e.Code
 		result.Msg = e.Msg
 		result.Err = err.Error()
@@ -63,7 +62,7 @@ func HertzWrapHandler[T, R any](fn func(ctx context.Context, c *app.RequestConte
 		t := reflect.TypeOf(req)
 		if t != reflect.TypeOf(Empty{}) {
 			if err := c.Bind(&req); err != nil {
-				ResFail(ctx, c, xerr.NewCommBizErr(err.Error()))
+				ResFail(ctx, c, NewCommBizErr(err.Error()))
 				c.Abort()
 				return
 			}
