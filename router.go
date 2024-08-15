@@ -1,9 +1,9 @@
 package going
 
 import (
-	"github.com/cloudwego/hertz/pkg/route"
+	"github.com/gin-gonic/gin"
 )
 
-var R *route.RouterGroup
+var R *gin.RouterGroup
 
-var AuthR *route.RouterGroup
+var AuthR *gin.RouterGroup

@@ -1,11 +1,12 @@
-package going
+package ginx
 
 import (
-	"context"
 	"reflect"
 	"time"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/PirateDreamer/going/comm"
+	"github.com/PirateDreamer/going/xerr"
+	"github.com/gin-gonic/gin"
 )
 
 type Response struct {
@@ -19,31 +20,32 @@ type Response struct {
 
 type Empty struct{}
 
-func ResSuccess(ctx context.Context, c *app.RequestContext, data any) {
+func ResSuccess(c *gin.Context, data any) {
 	if data == nil {
 		data = Empty{}
 	}
+
 	c.JSON(200, Response{
 		Code:  0,
 		Msg:   "success",
 		Time:  time.Now().Unix(),
-		ReqId: ctx.Value("traceId").(string),
+		ReqId: comm.GetReqId(c),
 		Data:  data,
 	})
 }
 
-func ResFail(ctx context.Context, c *app.RequestContext, err error) {
-	ResFailWithData(ctx, c, err, Empty{})
+func ResFail(c *gin.Context, err error) {
+	ResFailWithData(c, err, Empty{})
 }
 
-func ResFailWithData(ctx context.Context, c *app.RequestContext, err error, data any) {
+func ResFailWithData(c *gin.Context, err error, data any) {
 	result := Response{
 		Time:  time.Now().Unix(),
-		ReqId: ctx.Value("traceId").(string),
 		Data:  data,
+		ReqId: comm.GetReqId(c),
 	}
 	switch e := err.(type) {
-	case BizError:
+	case xerr.BizError:
 		result.Code = e.Code
 		result.Msg = e.Msg
 		result.Err = err.Error()
@@ -55,27 +57,27 @@ func ResFailWithData(ctx context.Context, c *app.RequestContext, err error, data
 	c.JSON(200, result)
 }
 
-func HertzWrapHandler[T, R any](fn func(ctx context.Context, c *app.RequestContext, req T) (*R, error)) app.HandlerFunc {
-	return func(ctx context.Context, c *app.RequestContext) {
+func Run[T, R any](fn func(c *gin.Context, req T) (*R, error)) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		// 参数绑定
 		var req T
 		t := reflect.TypeOf(req)
 		if t != reflect.TypeOf(Empty{}) {
 			if err := c.Bind(&req); err != nil {
-				ResFail(ctx, c, NewCommBizErr(err.Error()))
+				ResFail(c, xerr.NewCommBizErr(err.Error()))
 				c.Abort()
 				return
 			}
 		}
 		// 执行处理逻辑
-		resp, err := fn(ctx, c, req)
+		resp, err := fn(c, req)
 
 		// 结果处理
 		if err != nil {
-			ResFail(ctx, c, err)
+			ResFail(c, err)
 		} else {
-			ResSuccess(ctx, c, resp)
+			ResSuccess(c, resp)
 		}
-		c.Next(ctx)
+		c.Next()
 	}
 }

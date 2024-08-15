@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -14,9 +15,16 @@ import (
 )
 
 func InitConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath != "" {
+		log.Println("Load config file from: ", configPath)
+		viper.SetConfigFile(configPath)
+	} else {
+		log.Println("Load config file from: ./config.yaml")
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
+	}
 
 	// 设置默认值
 	viper.SetDefault("server.addr", "0.0.0.0:8000")
@@ -27,9 +35,8 @@ func InitConfig() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	// 如果开启 nacos 配置中心，则初始化 nacos 配置，否则监听配置文件变化（不能同时使用 nacos 和监听本地文件）
 	if viper.GetBool("etcd.enable") {
-		// 初始化 nacos 配置
+		// 初始化 etcd 配置
 		InitEtcdConfig()
 	} else {
 		// 监听配置文件变化
