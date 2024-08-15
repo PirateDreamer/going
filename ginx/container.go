@@ -1,4 +1,4 @@
-package going
+package ginx
 
 import "go.uber.org/dig"
 

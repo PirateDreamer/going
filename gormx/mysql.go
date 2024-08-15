@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PirateDreamer/going/zlog.go"
+	"github.com/PirateDreamer/going/comm"
+	"github.com/PirateDreamer/going/zlog"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
@@ -82,7 +83,7 @@ func (l GormLogger) LogMode(level logger.LogLevel) logger.Interface {
 }
 
 func (l GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
-	l.logger().Sugar().Debugf(str, args...)
+	l.logger().Sugar().Infof(str, args...)
 }
 
 func (l GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
@@ -103,6 +104,7 @@ func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	// 通用字段
 	logFields := []zap.Field{
 		zap.String("sql", sql),
+		zap.String("req_id", comm.GetReqId(ctx)),
 		zap.String("time", fmt.Sprintf("%dµs", elapsed/time.Microsecond)),
 		zap.Int64("rows", rows),
 	}
@@ -125,7 +127,7 @@ func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	}
 
 	// 记录所有 SQL 请求
-	l.logger().Debug("Database Query", logFields...)
+	l.logger().Info("Database Query", logFields...)
 }
 
 // logger 内用的辅助方法，确保 Zap 内置信息 Caller 的准确性（如 paginator/paginator.go:148）
