@@ -61,7 +61,11 @@ func ResFailWithData(ctx context.Context, c *gin.Context, err error, data any) {
 
 func Run[T, R any](fn func(ctx context.Context, c *gin.Context, req T) (*R, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx := context.WithValue(c.Request.Context(), "req_id", uuid.NewV4().String())
+		ctx := c.Request.Context()
+		if reqId := ctx.Value("req_id"); reqId == nil {
+			c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "req_id", uuid.NewV4().String()))
+			ctx = c.Request.Context()
+		}
 
 		// 参数绑定
 		var req T
