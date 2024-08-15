@@ -17,6 +17,8 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(ginx.TraceMiddleware())
+
 	r.GET("/ping", ginx.Run(sayHello))
 
 	r.Run()
