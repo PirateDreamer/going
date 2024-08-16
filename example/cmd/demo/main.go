@@ -4,7 +4,9 @@ import (
 	"flag"
 
 	"github.com/PirateDreamer/going/conf"
+	"github.com/PirateDreamer/going/example/api"
 	"github.com/PirateDreamer/going/ginx"
+	"github.com/PirateDreamer/going/gormx"
 	"github.com/PirateDreamer/going/zlog"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +17,7 @@ func main() {
 	flag.Parse()
 	conf.InitConfig(configFile)
 	zlog.InitZlog()
-	// gormx.InitMysql()
+	gormx.InitMysql()
 
 	ginx.InitContainer()
 	r := gin.Default()
@@ -23,6 +25,7 @@ func main() {
 	ginx.R = r.Group("/api")
 	ginx.InitContainer()
 
+	api.InitApi()
 	// ginx.AuthR = ginc.R.Group("/auth")
 	// ginx.Use(ginx.AuthMiddleware())
 

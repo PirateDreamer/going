@@ -2,11 +2,15 @@ package rest
 
 import (
 	"context"
+	"errors"
 
+	"github.com/PirateDreamer/going/example/domain"
 	"github.com/PirateDreamer/going/example/internal/repo"
 	"github.com/PirateDreamer/going/example/service/user"
 	"github.com/PirateDreamer/going/ginx"
+	"github.com/PirateDreamer/going/xerr"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func InitUserIoc() {
@@ -23,9 +27,10 @@ func InitUserRest() {
 
 type UserRest struct {
 	UserService user.UserService
+	UserRepo    repo.UserRepo
 }
 
-func NewUserRest(userService user.UserService) UserRest {
+func NewUserRest(userService user.UserService, userRepo repo.UserRepo) UserRest {
 	return UserRest{
 		UserService: userService,
 	}
@@ -36,7 +41,15 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
-func (u UserRest) Login(ctx context.Context, c *gin.Context, param LoginReq) (resp *ginx.Empty, err error) {
+func (u UserRest) Login(ctx context.Context, c *gin.Context, param LoginReq) (resp *domain.User, err error) {
 	// logic
+	var userInfo domain.User
+	if userInfo, err = u.UserRepo.GetUserByAccount(ctx, param.UserName); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = xerr.NewCommBizErr("用户不存在")
+		}
+		return
+	}
+	resp = &userInfo
 	return
 }
