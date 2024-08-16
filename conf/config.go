@@ -15,13 +15,13 @@ import (
 )
 
 func InitConfig(configFile *string) {
-	if configFile != nil {
-		log.Println("Load config file from: ", *configFile)
-		viper.SetConfigFile(*configFile)
-	} else if os.Getenv("CONFIG_PATH") != "" {
+	if os.Getenv("CONFIG_PATH") != "" {
 		configPath := os.Getenv("CONFIG_PATH")
 		log.Println("Load config file from: ", configPath)
 		viper.SetConfigFile(configPath)
+	} else if configFile != nil {
+		log.Println("Load config file from: ", *configFile)
+		viper.SetConfigFile(*configFile)
 	} else {
 		log.Println("Load config file from: ./config.yaml")
 		viper.SetConfigName("config")
