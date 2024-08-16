@@ -2,11 +2,11 @@ package rest
 
 import (
 	"context"
+	"demo/domain"
+	"demo/internal/repo"
+	"demo/service/user"
 	"errors"
 
-	"github.com/PirateDreamer/going/example/domain"
-	"github.com/PirateDreamer/going/example/internal/repo"
-	"github.com/PirateDreamer/going/example/service/user"
 	"github.com/PirateDreamer/going/ginx"
 	"github.com/PirateDreamer/going/xerr"
 	"github.com/gin-gonic/gin"

@@ -2,6 +2,8 @@
 
 Go web development extension package, simple and easy to use
 
+support golang version 1.22.2+
+
 ## install
 ```
 go get github.com/PirateDreamer/going

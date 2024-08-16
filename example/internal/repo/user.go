@@ -2,8 +2,8 @@ package repo
 
 import (
 	"context"
+	"demo/domain"
 
-	"github.com/PirateDreamer/going/example/domain"
 	"github.com/PirateDreamer/going/gormx"
 )
 

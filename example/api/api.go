@@ -1,6 +1,6 @@
 package api
 
-import "github.com/PirateDreamer/going/example/internal/rest"
+import "demo/internal/rest"
 
 func InitApi() {
 	InitIoc()

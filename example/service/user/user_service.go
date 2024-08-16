@@ -1,6 +1,6 @@
 package user
 
-import "github.com/PirateDreamer/going/example/internal/repo"
+import "demo/internal/repo"
 
 type UserService struct {
 	UserRepo repo.UserRepo
