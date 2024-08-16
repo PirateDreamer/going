@@ -1,15 +1,6 @@
-package gormx
+package domain
 
-import (
-	"context"
-	"fmt"
-	"testing"
-	"time"
-
-	"github.com/PirateDreamer/going/conf"
-	"github.com/PirateDreamer/going/zlog"
-	uuid "github.com/satori/go.uuid"
-)
+import "time"
 
 type User struct {
 	Id            int64      `gorm:"column:id;primary_key;AUTO_INCREMENT" json:"id"`
@@ -28,16 +19,4 @@ type User struct {
 
 func (m *User) TableName() string {
 	return "user"
-}
-
-func TestMy(t *testing.T) {
-	conf.InitConfig(nil)
-	zlog.InitZlog()
-	InitMysql()
-	c := context.WithValue(context.Background(), "req_id", uuid.NewV4().String())
-	var user User
-	if err := Mysql.WithContext(c).Where("id = ?", 4).First(&user).Error; err != nil {
-		return
-	}
-	fmt.Println(user)
 }

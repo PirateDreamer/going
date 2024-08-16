@@ -1,8 +1,7 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"flag"
 
 	"github.com/PirateDreamer/going/conf"
 	"github.com/PirateDreamer/going/ginx"
@@ -10,32 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var configFile = flag.String("f", "/Users/mac/Desktop/workspace/myGoWorkspace/me/going/example/etc/config.yml", "the config f")
+
 func main() {
-	conf.InitConfig()
+	flag.Parse()
+	conf.InitConfig(configFile)
 	zlog.InitZlog()
 	// gormx.InitMysql()
 
+	ginx.InitContainer()
 	r := gin.Default()
-
 	r.Use(ginx.TraceMiddleware())
+	ginx.R = r.Group("/api")
+	ginx.InitContainer()
 
-	r.GET("/ping", ginx.Run(sayHello))
+	// ginx.AuthR = ginc.R.Group("/auth")
+	// ginx.Use(ginx.AuthMiddleware())
 
 	r.Run()
-}
-
-type SayHelloReq struct {
-	Name string `form:"name"`
-}
-
-type SayHelloResp struct {
-	Result string `json:"result"`
-}
-
-func sayHello(ctx context.Context, c *gin.Context, param SayHelloReq) (resp *SayHelloResp, err error) {
-	zlog.Log(ctx).Info(param.Name)
-	resp = &SayHelloResp{
-		Result: fmt.Sprintf("hello %s", param.Name),
-	}
-	return
 }

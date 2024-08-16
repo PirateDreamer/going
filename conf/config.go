@@ -14,9 +14,12 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func InitConfig() {
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath != "" {
+func InitConfig(configFile *string) {
+	if configFile != nil {
+		log.Println("Load config file from: ", *configFile)
+		viper.SetConfigFile(*configFile)
+	} else if os.Getenv("CONFIG_PATH") != "" {
+		configPath := os.Getenv("CONFIG_PATH")
 		log.Println("Load config file from: ", configPath)
 		viper.SetConfigFile(configPath)
 	} else {

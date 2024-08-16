@@ -8,3 +8,6 @@ mysql:
   pass: root
   database: user
   enable_log: true
+log:
+  output: file
+  file: ./demo.log
