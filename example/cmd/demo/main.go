@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 
+	"demo/api"
+
 	"github.com/PirateDreamer/going/conf"
-	"github.com/PirateDreamer/going/example/api"
 	"github.com/PirateDreamer/going/ginx"
 	"github.com/PirateDreamer/going/gormx"
 	"github.com/PirateDreamer/going/zlog"
