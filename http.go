@@ -9,8 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Houserqu/ginc"
-	"github.com/PirateDreamer/going/ginx"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -40,19 +38,4 @@ func GranceRun(router *gin.Engine) {
 		log.Fatal("Server Shutdown:", err)
 	}
 	log.Println("Server exiting")
-}
-
-func InitHttp() {
-	ginx.InitContainer()
-	var router *gin.Engine
-	if !viper.GetBool("server.gin_not_default") {
-		router = gin.Default()
-	} else {
-		router = gin.New()
-	}
-	router.Use(ginx.TraceMiddleware())
-	ginx.R = router.Group("/api")
-
-	ginx.AuthR = ginc.R.Group("/auth")
-	// ginx.AuthR.Use(ginx.AuthMiddleware())
 }
