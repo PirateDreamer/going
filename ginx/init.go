@@ -1,7 +1,6 @@
 package ginx
 
 import (
-	"github.com/Houserqu/ginc"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -16,7 +15,7 @@ func InitHttp() (router *gin.Engine) {
 	router.Use(TraceMiddleware())
 	R = router.Group("/api")
 
-	AuthR = ginc.R.Group("/auth")
+	AuthR = R.Group("/auth")
 	// ginx.AuthR.Use(ginx.AuthMiddleware())
 	return
 }
