@@ -5,20 +5,46 @@ Go web development extension package, simple and easy to use
 support golang version 1.22.2+
 
 ## install
+
 ```
 go get github.com/PirateDreamer/going
 ```
 
 ## content
 
-ginx http handler
+ginx: Based on gin support for HTTP processing
 
-gormx mysql connect and custom log
+gormx: Mysql connect and custom log
 
-zlog use zap
+zlog: Provide Zap with support for log splitting
 
-xerr custom err
+xerr: Custom err
 
-stl golang container
+stl: Golang container
 
-config support yml and etcd
+config: Support local yml and etcd
+
+gredis: Redis connect
+
+## use
+
+```go
+package main
+
+import (
+   "going-demo/api"
+
+   "github.com/PirateDreamer/going"
+)
+
+func main() {
+   router := going.InitService()
+   // api service
+   api.InitApi()
+   going.GranceRun(router)
+}
+```
+
+## Example
+
+[GitHub - PirateDreamer/going-demo: going demo](https://github.com/PirateDreamer/going-demo)
