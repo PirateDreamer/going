@@ -1,20 +1,42 @@
 package grpcx
 
-import "google.golang.org/grpc"
+import (
+	"log"
+	"net"
 
-var GrpcServer *grpc.Server
+	"google.golang.org/grpc"
+)
 
-func NewServer() {
-	GrpcServer = grpc.NewServer()
+type GRPCServer struct {
+	Server *grpc.Server
 }
 
-// 支持拦截器
-func RegisterGrpcServer(f func(*grpc.Server, any), srv any) {
-	f(GrpcServer, srv)
+func NewGrpcServer(opts ...grpc.ServerOption) *GRPCServer {
+	if len(opts) == 0 {
+		// 默认配置
+		opts = []grpc.ServerOption{
+			// grpc.UnaryInterceptor(interceptor.LoggingInterceptor), // 日志拦截器
+			grpc.UnaryInterceptor(validationInterceptor), // 参数校验拦截器
+		}
+	}
+
+	s := grpc.NewServer(opts...)
+	return &GRPCServer{Server: s}
 }
 
-// 创建服务
+func (s *GRPCServer) StartGrpcServer(addr string) {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
 
-// 注册grpc服务
+	log.Printf("Starting gRPC server on %s", addr)
+	if err := s.Server.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve: %v", err)
+	}
+}
 
-// 启动服务
+// Stop 关闭服务
+func (s *GRPCServer) StopGrpcServer() {
+	s.Server.GracefulStop()
+}
