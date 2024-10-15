@@ -15,8 +15,7 @@ func NewGrpcServer(opts ...grpc.ServerOption) *GRPCServer {
 	if len(opts) == 0 {
 		// 默认配置
 		opts = []grpc.ServerOption{
-			// grpc.UnaryInterceptor(interceptor.LoggingInterceptor), // 日志拦截器
-			grpc.UnaryInterceptor(validationInterceptor), // 参数校验拦截器
+			grpc.UnaryInterceptor(ValidationInterceptor), // 参数校验拦截器
 		}
 	}
 
