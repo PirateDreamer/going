@@ -11,19 +11,13 @@ import (
 )
 
 // 检查并创建请求ID
-func GrpcCheckReqId() grpc.UnaryServerInterceptor {
+func CheckReqIdInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		reqId := ctx.Value("req_id")
 		if reqId == nil {
 			traceId := uuid.NewV4().String()
 			ctx = context.WithValue(ctx, "req_id", traceId)
 		}
-		return handler(ctx, req)
-	}
-}
-
-func GrpcRequestLogger() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		return handler(ctx, req)
 	}
 }
