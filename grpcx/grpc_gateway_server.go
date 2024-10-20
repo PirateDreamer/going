@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type HTTPServer struct {
@@ -18,7 +19,11 @@ type HTTPServer struct {
 func NewHttpServer() *HTTPServer {
 	mux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &CustomMarshaler{
-			Marshaler: &runtime.JSONPb{},
+			Marshaler: &runtime.JSONPb{
+				MarshalOptions: protojson.MarshalOptions{
+					UseProtoNames: true,
+				},
+			},
 		}),
 		runtime.WithErrorHandler(CustomErrorHandler),
 	)

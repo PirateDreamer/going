@@ -7,3 +7,5 @@ import (
 var R *gin.RouterGroup
 
 var AuthR *gin.RouterGroup
+
+var Route *gin.Engine

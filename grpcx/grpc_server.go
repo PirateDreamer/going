@@ -11,12 +11,20 @@ type GRPCServer struct {
 	Server *grpc.Server
 }
 
-func NewGrpcServer(opts ...grpc.ServerOption) *GRPCServer {
-	if len(opts) == 0 {
-		// 默认配置
-		opts = []grpc.ServerOption{
-			grpc.UnaryInterceptor(ValidationInterceptor), // 参数校验拦截器
-		}
+func NewGrpcServer(userInterceptors []grpc.UnaryServerInterceptor) *GRPCServer {
+
+	interceptors := []grpc.UnaryServerInterceptor{
+		ValidationInterceptor,    // 参数校验拦截器
+		PanicRecoveryInterceptor, // panic 恢复拦截器
+	}
+
+	// 将用户自定义的拦截器和系统内置的拦截器合并
+	interceptors = append(interceptors, userInterceptors...)
+
+	chainUnaryInterceptor := grpc.ChainUnaryInterceptor(interceptors...)
+
+	opts := []grpc.ServerOption{
+		chainUnaryInterceptor,
 	}
 
 	s := grpc.NewServer(opts...)
