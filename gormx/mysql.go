@@ -11,11 +11,14 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 var Mysql *gorm.DB
 
 func InitMysql() {
+	schema.RegisterSerializer("timestamp", TimestampSerializer{})
+
 	host := viper.GetString("mysql.host")
 	if host == "" {
 		return
