@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/PirateDreamer/going/comm"
-	"github.com/PirateDreamer/going/xerr"
+	"github.com/PirateDreamer/going/grpcx"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/status"
 )
 
 type Response struct {
@@ -44,13 +45,14 @@ func ResFailWithData(ctx context.Context, c *gin.Context, err error, data any) {
 		Data:  data,
 		ReqId: comm.GetReqId(ctx),
 	}
-	switch e := err.(type) {
-	case xerr.BizError:
-		result.Code = e.Code
-		result.Msg = e.Msg
-		result.Err = err.Error()
-	default:
-		result.Code = 1
+	st, ok := status.FromError(err)
+	if ok && st.Code() >= 1000 {
+		// 业务错误
+		result.Code = int(st.Code())
+		result.Msg = st.Message()
+		result.Err = st.Err().Error()
+	} else {
+		result.Code = 10000
 		result.Msg = "系统繁忙"
 		result.Err = err.Error()
 	}
@@ -64,7 +66,7 @@ func Run[T, R any](fn func(ctx context.Context, c *gin.Context, req T) (*R, erro
 		// 参数绑定
 		var req T
 		if err := c.ShouldBind(&req); err != nil {
-			ResFail(ctx, c, xerr.NewCommBizErr(err.Error()))
+			ResFail(ctx, c, grpcx.BizErr(err.Error()))
 			c.Abort()
 			return
 		}
