@@ -2,53 +2,53 @@ package zlog
 
 import (
 	"context"
-	"os"
+	"fmt"
+	"log"
+	"strings"
 
 	"github.com/PirateDreamer/going/comm"
-	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// print、write file、upload
+// 定义日志级别
+const (
+	INFO  = "INFO"
+	WARN  = "WARN"
+	ERROR = "ERROR"
+	DEBUG = "DEBUG"
+)
 
-var Logger *zap.Logger
+// logWithFields 根据日志级别和字段输出日志
+func LogWithFields(ctx context.Context, level string, format string, a ...any) {
+	// 获取 traceID 和时间戳
+	traceID := comm.GetReqId(ctx)
 
-func InitZlog() {
-	var err error
-	if viper.GetBool("dev") {
-		Logger, err = zap.NewDevelopment()
-	} else {
-		if viper.GetString("log.output") == "file" {
-			if viper.GetString("log.file") == "" {
-				viper.Set("log.file", "./log_file.log")
-			}
-
-			encoderConfig := zap.NewProductionEncoderConfig()
-			encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-			core := zapcore.NewCore(
-				zapcore.NewJSONEncoder(encoderConfig),
-				zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&lumberjack.Logger{
-					Filename:   viper.GetString("log.file"), // 日志文件路径
-					MaxSize:    10,                          // 每个日志文件的最大大小（以MB为单位）
-					MaxBackups: 5,                           // 保留的旧日志文件的最大数量
-					MaxAge:     30,                          // 最多保留的天数
-					Compress:   true,                        // 是否压缩旧日志文件
-				})),
-				zap.NewAtomicLevelAt(zap.InfoLevel),
-			)
-
-			Logger = zap.New(core)
-		} else {
-			Logger, err = zap.NewProduction()
-		}
+	// 构建日志字段
+	logEntry := []string{
+		"level=" + level,
+		"requestID=" + traceID,
+		fmt.Sprintf(format, a...),
 	}
-	if err != nil {
-		panic(err)
-	}
+
+	// 打印日志
+	log.Println(strings.Join(logEntry, " "))
 }
 
-func Log(c context.Context) *zap.Logger {
-	return Logger.With(zap.String("req_id", comm.GetReqId(c)))
+// Info 输出信息级别日志
+func LogInfo(ctx context.Context, format string, a ...any) {
+	LogWithFields(ctx, INFO, format, a...)
+}
+
+// Warn 输出警告级别日志
+func LogWarn(ctx context.Context, format string, a ...any) {
+	LogWithFields(ctx, WARN, format, a...)
+}
+
+// Error 输出错误级别日志
+func LogError(ctx context.Context, format string, a ...any) {
+	LogWithFields(ctx, ERROR, format, a...)
+}
+
+// Debug 输出调试级别日志
+func LogDebug(ctx context.Context, format string, a ...any) {
+	LogWithFields(ctx, DEBUG, format, a...)
 }

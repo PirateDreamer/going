@@ -2,13 +2,11 @@ package ginx
 
 import (
 	"context"
-	"reflect"
 	"time"
 
 	"github.com/PirateDreamer/going/comm"
 	"github.com/PirateDreamer/going/xerr"
 	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
 )
 
 type Response struct {
@@ -62,20 +60,13 @@ func ResFailWithData(ctx context.Context, c *gin.Context, err error, data any) {
 func Run[T, R any](fn func(ctx context.Context, c *gin.Context, req T) (*R, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
-		if reqId := ctx.Value("req_id"); reqId == nil {
-			c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "req_id", uuid.NewV4().String()))
-			ctx = c.Request.Context()
-		}
 
 		// 参数绑定
 		var req T
-		t := reflect.TypeOf(req)
-		if t != reflect.TypeOf(Empty{}) {
-			if err := c.Bind(&req); err != nil {
-				ResFail(ctx, c, xerr.NewCommBizErr(err.Error()))
-				c.Abort()
-				return
-			}
+		if err := c.ShouldBind(&req); err != nil {
+			ResFail(ctx, c, xerr.NewCommBizErr(err.Error()))
+			c.Abort()
+			return
 		}
 
 		// 执行处理逻辑
