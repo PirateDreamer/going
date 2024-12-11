@@ -22,10 +22,6 @@ type Response struct {
 type Empty struct{}
 
 func ResSuccess(ctx context.Context, c *gin.Context, data any) {
-	if data == nil {
-		data = Empty{}
-	}
-
 	c.JSON(200, Response{
 		Code:  0,
 		Msg:   "success",
