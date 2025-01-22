@@ -1,0 +1,15 @@
+# buf.gen.yaml
+version: v1
+plugins:
+  - plugin: go
+    out: gen/go
+  - plugin: go-grpc
+    out: gen/go
+  - name: grpc-gateway
+    out: gen/go
+    opt:
+      - generate_unbound_methods=true
+  - name: validate
+    out: gen/go
+    opt:
+      - lang=go

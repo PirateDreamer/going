@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mario.user;
+
+option go_package = "mario/user;user";
+
+import "validate/validate.proto";
+
+service UserService{
+    rpc Login(LoginRequest) returns (LoginResponse);
+}
+
+message LoginRequest{
+    string account = 1 [(validate.rules).string.email = true];
+    string pass = 2;
+}
+
+message LoginResponse{
+    string token = 1;
+}
