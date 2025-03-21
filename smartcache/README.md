@@ -10,4 +10,4 @@ Memory elimination strategy: FIFO, LRU
 
 Extended Function: Cache Consistency
 
-
+支持分布式缓存
