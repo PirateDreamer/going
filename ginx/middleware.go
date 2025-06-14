@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/PirateDreamer/going/gredis"
+	"github.com/PirateDreamer/going/component/cache"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -43,7 +43,7 @@ func Cache(seconds, db int) gin.HandlerFunc {
 		hash.Write([]byte(parsedURL.RawQuery + platform))
 		hashValue := hash.Sum(nil)
 		key += hex.EncodeToString(hashValue)
-		cacheData, err := gredis.Redis[db].Get(c, key).Result()
+		cacheData, err := cache.Redis[db].Get(c, key).Result()
 		if err == nil && cacheData != "" {
 			var resData map[string]any
 			err := json.Unmarshal([]byte(cacheData), &resData)
@@ -67,7 +67,7 @@ func Cache(seconds, db int) gin.HandlerFunc {
 		responseBody := recorder.body.String()
 		if responseBody != "" {
 			// 缓存
-			gredis.Redis[db].SetNX(c, key, responseBody, time.Duration(seconds)*time.Second)
+			cache.Redis[db].SetNX(c, key, responseBody, time.Duration(seconds)*time.Second)
 		}
 	}
 }

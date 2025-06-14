@@ -1,4 +1,4 @@
-package going
+package ginx
 
 import (
 	"context"
@@ -8,23 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 // 优雅开关机
-func GranceRun(router *gin.Engine) {
-	srv := &http.Server{
-		Addr:    viper.GetString("server.addr"),
-		Handler: router,
-	}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
+func GraceStop(srv *http.Server) {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
