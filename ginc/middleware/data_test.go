@@ -1,15 +1,14 @@
-package middleware_test
+package middleware
 
 import (
 	"testing"
 
-	"github.com/PirateDreamer/going/ginc/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func TestAesApiDataDecrypt(t *testing.T) {
 	router := gin.Default()
-	router.Use(middleware.BodyAesDecrypt(middleware.BodyAesDecryptParam{
+	router.Use(BodyAesDecrypt(BodyAesDecryptParam{
 		Iv:           "1234567890123456",
 		Key:          "12345678901234567890123456789012",
 		Milliseconds: 60000,
