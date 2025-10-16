@@ -12,17 +12,13 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type AesApiDataDecrypt struct {
-	key          string // key 长度必须为16位
-	iv           string // iv  长度必须为16位
-	milliseconds int64  // 接口数据时间戳与当前时间戳的差异,大于此值则返回错误
+type BodyAesDecryptParam struct {
+	Iv           string // key 长度必须为16位
+	Key          string // iv  长度必须为16位
+	Milliseconds int64  // 接口数据时间戳与当前时间戳的差异,大于此值则返回错误
 }
 
-func NewAesApiDataDecrypt(key, iv string, milliseconds int64) *AesApiDataDecrypt {
-	return &AesApiDataDecrypt{key: key, iv: iv, milliseconds: milliseconds}
-}
-
-func (d *AesApiDataDecrypt) GinMiddleware() gin.HandlerFunc {
+func BodyAesDecrypt(param BodyAesDecryptParam) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 读取原始请求body数据
 		body, err := io.ReadAll(c.Request.Body)
@@ -38,14 +34,14 @@ func (d *AesApiDataDecrypt) GinMiddleware() gin.HandlerFunc {
 		}
 
 		// 执行AES解密
-		decryptedBody, err := comm.AesDecrypt(body, []byte(d.key), []byte(d.iv))
+		decryptedBody, err := comm.AesDecrypt(body, []byte(param.Key), []byte(param.Iv))
 		if err != nil {
 			ginc.ResFail(c.Request.Context(), c, err)
 			return
 		}
 
 		// 判断接口里的时间和当前时间的差异,大于秒数则返回错误
-		if (time.Now().UnixMilli() - gjson.Get(string(decryptedBody), "timestamp").Int()) > d.milliseconds {
+		if (time.Now().UnixMilli() - gjson.Get(string(decryptedBody), "timestamp").Int()) > param.Milliseconds {
 			ginc.ResFail(c.Request.Context(), c, err)
 			return
 		}

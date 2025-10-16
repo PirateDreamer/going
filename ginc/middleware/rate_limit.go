@@ -70,17 +70,33 @@ func (l *TokenBucketLimiter) Allow(ctx context.Context, key string, requested fl
 	return res == 1, nil
 }
 
+type DTBLimiterParam struct {
+	Client   *redis.Client             // redis 客户端
+	Rate     float64                   // 每秒生成多少令牌
+	Capacity float64                   // 桶容量
+	BizErr   error                     // 令牌不够业务错误
+	KeyFn    func(*gin.Context) string // 获取限流key的函数
+}
+
 // GinMiddleware 返回一个 Gin 中间件
-func (l *TokenBucketLimiter) GinMiddleware(keyFunc func(*gin.Context) string) gin.HandlerFunc {
+func DTBLimiter(param DTBLimiterParam) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		key := keyFunc(c)
-		allowed, err := l.Allow(c.Request.Context(), key, 1)
+		key := param.KeyFn(c)
+		now := float64(time.Now().UnixMilli())
+		keys := []string{
+			fmt.Sprintf("rate_limiter:%s:last_refill", key),
+			fmt.Sprintf("rate_limiter:%s:tokens", key),
+		}
+		args := []interface{}{param.Rate, param.Capacity, now, 1}
+
+		res, err := param.Client.Eval(c.Request.Context(), luaScript, keys, args...).Int()
 		if err != nil {
 			ginc.ResFail(c.Request.Context(), c, err)
+			c.Abort()
 			return
 		}
-		if !allowed {
-			ginc.ResFail(c.Request.Context(), c, l.bizErr)
+		if res != 1 {
+			ginc.ResFail(c.Request.Context(), c, param.BizErr)
 			c.Abort()
 			return
 		}
