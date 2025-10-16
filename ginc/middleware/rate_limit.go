@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -9,14 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
-
-// TokenBucketLimiter 实现令牌桶限流
-type TokenBucketLimiter struct {
-	client   *redis.Client // redis 客户端
-	rate     float64       // 每秒生成多少令牌
-	capacity float64       // 桶容量
-	bizErr   error         // 令牌不够业务错误
-}
 
 // Lua脚本（保证原子性）
 const luaScript = `
@@ -44,32 +35,6 @@ else
 end
 `
 
-// NewTokenBucketLimiter 创建限流器实例
-func NewTokenBucketLimiter(client *redis.Client, rate, capacity float64, bizErr error) *TokenBucketLimiter {
-	return &TokenBucketLimiter{
-		client:   client,
-		rate:     rate,
-		capacity: capacity,
-		bizErr:   bizErr,
-	}
-}
-
-// Allow 检查是否允许通过
-func (l *TokenBucketLimiter) Allow(ctx context.Context, key string, requested float64) (bool, error) {
-	now := float64(time.Now().UnixMilli())
-	keys := []string{
-		fmt.Sprintf("rate_limiter:%s:last_refill", key),
-		fmt.Sprintf("rate_limiter:%s:tokens", key),
-	}
-	args := []interface{}{l.rate, l.capacity, now, requested}
-
-	res, err := l.client.Eval(ctx, luaScript, keys, args...).Int()
-	if err != nil {
-		return false, err
-	}
-	return res == 1, nil
-}
-
 type DTBLimiterParam struct {
 	Client   *redis.Client             // redis 客户端
 	Rate     float64                   // 每秒生成多少令牌
@@ -78,7 +43,7 @@ type DTBLimiterParam struct {
 	KeyFn    func(*gin.Context) string // 获取限流key的函数
 }
 
-// GinMiddleware 返回一个 Gin 中间件
+// DTBLimiter 分布式令牌桶限流器，使用redis
 func DTBLimiter(param DTBLimiterParam) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := param.KeyFn(c)

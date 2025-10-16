@@ -13,11 +13,12 @@ import (
 )
 
 type BodyAesDecryptParam struct {
-	Iv           string // key 长度必须为16位
-	Key          string // iv  长度必须为16位
+	Key          string // 长度必须为16位
+	Iv           string // 长度必须为16位
 	Milliseconds int64  // 接口数据时间戳与当前时间戳的差异,大于此值则返回错误
 }
 
+// BodyAesDecrypt 请求body数据解密，aes使用CBC解密器，去除PKCS7填充
 func BodyAesDecrypt(param BodyAesDecryptParam) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 读取原始请求body数据
