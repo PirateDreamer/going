@@ -3,20 +3,19 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
+	"github.com/PirateDreamer/going/ginc"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
-var ctx = context.Background()
-
 // TokenBucketLimiter 实现令牌桶限流
 type TokenBucketLimiter struct {
-	client   *redis.Client
-	rate     float64 // 每秒生成多少令牌
-	capacity float64 // 桶容量
+	client   *redis.Client // redis 客户端
+	rate     float64       // 每秒生成多少令牌
+	capacity float64       // 桶容量
+	bizErr   error         // 令牌不够业务错误
 }
 
 // Lua脚本（保证原子性）
@@ -46,16 +45,17 @@ end
 `
 
 // NewTokenBucketLimiter 创建限流器实例
-func NewTokenBucketLimiter(client *redis.Client, rate, capacity float64) *TokenBucketLimiter {
+func NewTokenBucketLimiter(client *redis.Client, rate, capacity float64, bizErr error) *TokenBucketLimiter {
 	return &TokenBucketLimiter{
 		client:   client,
 		rate:     rate,
 		capacity: capacity,
+		bizErr:   bizErr,
 	}
 }
 
 // Allow 检查是否允许通过
-func (l *TokenBucketLimiter) Allow(key string, requested float64) (bool, error) {
+func (l *TokenBucketLimiter) Allow(ctx context.Context, key string, requested float64) (bool, error) {
 	now := float64(time.Now().UnixMilli())
 	keys := []string{
 		fmt.Sprintf("rate_limiter:%s:last_refill", key),
@@ -74,17 +74,13 @@ func (l *TokenBucketLimiter) Allow(key string, requested float64) (bool, error) 
 func (l *TokenBucketLimiter) GinMiddleware(keyFunc func(*gin.Context) string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := keyFunc(c)
-		allowed, err := l.Allow(key, 1)
+		allowed, err := l.Allow(c.Request.Context(), key, 1)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			c.Abort()
+			ginc.ResFail(c.Request.Context(), c, err)
 			return
 		}
 		if !allowed {
-			c.JSON(http.StatusTooManyRequests, gin.H{
-				"code": 429,
-				"msg":  "Too Many Requests",
-			})
+			ginc.ResFail(c.Request.Context(), c, l.bizErr)
 			c.Abort()
 			return
 		}

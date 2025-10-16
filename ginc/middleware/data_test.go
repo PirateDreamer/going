@@ -9,7 +9,7 @@ import (
 
 func TestAesApiDataDecrypt(t *testing.T) {
 	router := gin.Default()
-	router.Use(middleware.AesApiDataDecrypt("1234567890123456", "1234567890123456", 60000))
+	router.Use(middleware.NewAesApiDataDecrypt("1234567890123456", "1234567890123456", 60000).GinMiddleware())
 	router.POST("/ping", func(c *gin.Context) {
 		type Ping struct {
 			Name string `json:"name"`
