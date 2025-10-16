@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 )
 
-// aesDecrypt AES解密函数
+// AesDecrypt AES解密，使用CBC解密器和去除PKCS7填充
 func AesDecrypt(ciphertext []byte, key []byte, iv []byte) ([]byte, error) {
 	// 创建AES密码块
 	block, err := aes.NewCipher(key)
