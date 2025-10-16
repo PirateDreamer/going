@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestAesApiDataDecrypt(t *testing.T) {
+func TestBodyAesDecrypt(t *testing.T) {
 	router := gin.Default()
 	router.Use(BodyAesDecrypt(BodyAesDecryptParam{
 		Iv:           "1234567890123456",
